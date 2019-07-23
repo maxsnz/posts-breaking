@@ -22,7 +22,13 @@ function findNextClosingInline(str, startPosition) {
 }
 
 function findEndOfNode(str) {
-  if (str[0] !== '<') return str.length - 1;
+  // если начинается не с "<" - значит это текстовая нода
+  if (str[0] !== '<') {
+    let result = str.indexOf('<');
+    return (result > -1) ? result - 1 : str.length - 1;
+  }
+
+
   let i = 0;
   let result = null;
   do {
@@ -102,7 +108,7 @@ export const getChildNodes = post => {
     }
   })
 
-  return nodes1;
+  return nodes2;
 
 }
 

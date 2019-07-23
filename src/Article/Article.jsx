@@ -16,14 +16,17 @@ const Article = ({ post, banner }) => {
 
   // разобъем пост на дочерние части
   const nodes = getChildNodes(post);
+  // console.log('nodes', nodes);
 
   // количество групп частей поста: 
   // например, из 18 частей получается 4 группы: 
   // 5 + 5 + 5 + 3
   const nodeGroupsLength = Math.floor(nodes.length / groupLength) + 1;
+  // console.log('nodeGroupsLength', nodeGroupsLength);
 
   // разобъем пост на группы
   const nodeGroups = [...Array(nodeGroupsLength).keys()].map(index => nodes.slice(index * groupLength, (index + 1) * groupLength).join(''));
+  // console.log('nodeGroups', nodeGroups);
 
   return (
     <div className="articleContainer">
