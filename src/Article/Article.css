@@ -1,0 +1,19 @@
+.articleContainer {
+  width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.articleGrid {
+  display: grid;
+  grid-template-columns: 200px 800px 200px;
+  margin-bottom: 20px;
+}
+
+.articleSideColumn {
+
+}
+
+.articleContentColumn {
+
+}

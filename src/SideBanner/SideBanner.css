@@ -1,0 +1,13 @@
+.sideBanner {
+  width: 200px;
+  height: 400px;
+  position: sticky;
+  background: #03A9F4;
+  top: 10px;
+}
+
+.banner-text {
+  color:#fff;
+  font-size: 20px;
+  font-weight: bold;
+}
