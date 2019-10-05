@@ -34,14 +34,22 @@ function findEndOfNode(str) {
 
   if (tagClosingIndex === -1) {
     // если тег не закрывается - код не валидный, отдаем всю строку
+    // console.error('Invalid html: tag has not closing');
     return str.length - 1;
   }
 
   const tagName = getTagName(str);
+  // console.log('tagName', tagName);
 
   if (selfClosingTagsList.includes(tagName)) {
     // самозакрывающийся тег 
     return tagClosingIndex + 1;
+  }
+
+  if (!str.includes(`</${tagName}>`, tagClosingIndex + 1)) {
+    // если тег не закрывается правильно - код не валидный, отдаем всю строку
+    // console.error('Invalid html: tag not close itself', tagName);
+    return str.length - 1;
   }
 
   // осталось самое сложное - вложенный тег такого же типа
@@ -58,9 +66,9 @@ function findEndOfNode(str) {
     const partEndIndex = str.indexOf('>', tagIndex);
     sum = isClosing ? sum - 1 : sum + 1;
     pos = partEndIndex + 1;
-    // console.log({tagIndex, partEndIndex});
-    // console.log((isClosing ? 'закрывающий' : 'открывающий'), 'тег', str.substring(tagIndex - (isClosing ? 2 : 1), partEndIndex + 1));
-    // console.log({sum, pos}, '\n\r-----------');
+    console.log({tagIndex, partEndIndex});
+    console.log((isClosing ? 'закрывающий' : 'открывающий'), 'тег', str.substring(tagIndex - (isClosing ? 2 : 1), partEndIndex + 1));
+    console.log({sum, pos}, '\n\r-----------');
   } while (sum > -1 && pos < str.length && iterationsCount < 10000);
   // console.log('loop ended', iterationsCount);
 
@@ -71,6 +79,7 @@ function findEndOfNode(str) {
 
   if (iterationsCount >= 10000) {
     console.error('Oooops, it seems we catch an infinite loop');
+    console.error(str);
     return str.length - 1;
   }
 
@@ -96,6 +105,41 @@ const parseChildNodes = post => {
   const postWithoutWrapper = post.substring(post.indexOf('>') + 1, post.lastIndexOf('<'));
   return getArrayOfChildNodes([], postWithoutWrapper);
 };
+
+// проверяет "правильная" ли нода
+// (правильная - не текст, не скрипт, не стиль)
+const checkProperNode = node => {
+  if (node[0] !== '<') return false; // текстовая нода
+  if (node.startsWith('<script')) return false; // тэг script
+  if (node.startsWith('<style')) return false; // тэг style
+  return true;
+}
+
+// пригруппирует "неправильные" ноды к правильным
+export const groupNodes = list => {
+  if (list.length < 2) return list;
+
+  const grouped = [];
+  let i = 0;
+  while (list[i]) {
+    const currentGroup = [ list[i] ];
+    while (list[i + 1] && !checkProperNode(list[i + 1])) {
+      currentGroup.push(list[i + 1]);
+      i++;
+    }
+    grouped.push(currentGroup.join(''));
+    i++;
+  }
+  console.log('grouped', grouped);
+  // еще не проверяли первую ноду
+  if (checkProperNode(grouped[0])) {
+    return grouped;
+  } else {
+    // если она "неправильная" - пригруппируем к следующей
+    const [n1, n2, ...nRest] = grouped;
+    return [`${n1}${n2}`, ...nRest];
+  }
+}
 
 export const parseChildNodesViaDom = post => {
   const div = document.createElement('DIV');
