@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { getChildNodes } from '../utils';
+import parseChildNodes, { parseChildNodesViaDom } from '../htmlParse';
 import Banner from '../Banner';
 import SideBanner from '../SideBanner';
 import InnerHtmlWithScriptsContainer from '../InnerHtmlWithScriptsContainer';
@@ -10,43 +10,51 @@ const groupLength = 5; // разрываем пост через каждые 5 
 const Article = ({ post, banner }) => {
   // контейнер bfg-post в виде строки со всеми атрибутами
   const wrapContainerTopStr = post.substr(0, post.indexOf('>') + 1);
+  // console.log('wrapContainerTopStr', wrapContainerTopStr);
+
+  // почистить переносы
+  const cleanBody = post.replace(/(?:\r\n|\r|\n)/g, '');
 
   // оборачивает любой html контейнером bfg-post
   const wrapWithContainer = node => `${wrapContainerTopStr}${node}</div>`;
 
   // разобъем пост на дочерние части
-  const nodes = getChildNodes(post);
+  console.time('childNodes via text');
+  const nodes = parseChildNodes(cleanBody);
+  console.timeEnd('childNodes via text');
   // console.log('nodes', nodes);
 
-  // количество групп частей поста: 
-  // например, из 18 частей получается 4 группы: 
-  // 5 + 5 + 5 + 3
-  const nodeGroupsLength = Math.floor(nodes.length / groupLength) + 1;
-  // console.log('nodeGroupsLength', nodeGroupsLength);
-
-  // разобъем пост на группы
-  const nodeGroups = [...Array(nodeGroupsLength).keys()].map(index => nodes.slice(index * groupLength, (index + 1) * groupLength).join(''));
-  // console.log('nodeGroups', nodeGroups);
+  const nodesText = nodes;
+  console.time('childNodes via DOM');
+  const nodesDom = parseChildNodesViaDom(cleanBody);
+  console.timeEnd('childNodes via DOM');
+  nodesDom.map((node, index) => {
+    const nodeWithoutClosings = nodesText[index] && nodesText[index].replace(/\s\/>/g, '>');
+    if (node !== nodeWithoutClosings) {
+      console.error(`Text parser has defference in node index ${index}`, {dom: node, text: nodesText[index]});
+    }
+  });
 
   return (
     <div className="articleContainer">
-      {nodeGroups.map((node, index) => (
-        <Fragment key={index}>
-          {(index > 0) && <Banner code={banner} />}
-          <div className="articleGrid">
-            <div className="articleSideColumn">
-              <SideBanner code={banner} />
-            </div>
-            <div className="articleContentColumn">
+      <div className="articleColumn">
+        {nodesText.map((node, index) => (
+          <Fragment key={index}>
+            <div className="articleGrid">
               <InnerHtmlWithScriptsContainer html={wrapWithContainer(node)} />
             </div>
-            <div className="articleSideColumn">
-              <SideBanner code={banner} />
+          </Fragment>
+        ))}
+      </div>
+      <div className="articleColumn">
+        {nodesDom.map((node, index) => (
+          <Fragment key={index}>
+            <div className="articleGrid">
+              <InnerHtmlWithScriptsContainer html={wrapWithContainer(node)} />
             </div>
-          </div>
-        </Fragment>
-      ))}
-      
+          </Fragment>
+        ))}
+      </div>
     </div>
   );
 }

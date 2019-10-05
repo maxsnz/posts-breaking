@@ -2,11 +2,16 @@
   width: 1200px;
   margin: 0 auto;
   position: relative;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-gap: 10px;
+}
+
+.articleColumn {
+    width: 595px;
 }
 
 .articleGrid {
-  display: grid;
-  grid-template-columns: 200px 800px 200px;
   margin-bottom: 20px;
 }
 
@@ -16,4 +21,10 @@
 
 .articleContentColumn {
 
+}
+
+.group {
+  border: 5px solid red;
+  padding: 5px;
+  overflow: hidden;
 }
